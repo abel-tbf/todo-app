@@ -1,7 +1,6 @@
 import React, {createContext, useState, useEffect } from 'react';
 import { ITodo } from "./TodoList";
 
-
 interface IProps {
   children: React.ReactNode
 }

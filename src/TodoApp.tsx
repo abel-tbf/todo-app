@@ -1,18 +1,23 @@
-import { memo, useState, useRef, KeyboardEvent, lazy, Suspense, useContext } from 'react';
-import { TodoContext } from "./TodoContext";
+import { memo, useState, useRef, KeyboardEvent, lazy, Suspense } from 'react';
+import { useDispatch, useSelector } from "react-redux";
+import { ADD_TODO, SET_FILTER, SET_SEARCH, ITodoState } from "./store";
 import './App.css'
 
 const TodoList = lazy(() => import("./TodoList"));
 
 function TodoApp() {
-  const { addTodo, setFilter, setSearch, search } = useContext(TodoContext);
+  const todos = useSelector((state: ITodoState) => state.todos);
+  const filter = useSelector((state: ITodoState) => state.filter);
+  const search = useSelector((state: ITodoState) => state.search);
+  const dispatch = useDispatch();
+
   const [newTodo, setNewTodo] = useState("");
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleAddTodo = () => {
     if (newTodo.trim()) {
-      addTodo(newTodo);
+      dispatch({type: ADD_TODO, payload: newTodo});
       setNewTodo("");
       inputRef.current?.focus();
     }
@@ -20,9 +25,21 @@ function TodoApp() {
 
   const handleKeyPress = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
-      addTodo();
+      handleAddTodo();
     }
   };
+
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === "completed") {
+      return todo.completed;
+    } else if (filter === "active") {
+      return !todo.completed;
+    } else {
+      return true;
+    }
+  }).filter(todo => {
+    return todo.text.toLowerCase().includes(search.toLowerCase());
+  });
 
   return (
     <>
@@ -38,18 +55,18 @@ function TodoApp() {
         />
         <button onClick={handleAddTodo}>Add</button>
         <div>
-          <button onClick={() => setFilter("all")}>All</button>
-          <button onClick={() => setFilter("active")}>Active</button>
-          <button onClick={() => setFilter("completed")}>Completed</button>
+          <button onClick={() => dispatch({type: SET_FILTER, payload: "all"})}>All</button>
+          <button onClick={() => dispatch({type: SET_FILTER, payload: "active"})}>Active</button>
+          <button onClick={() => dispatch({type: SET_FILTER, payload: "completed"})}>Completed</button>
         </div>
         <input
           type="text"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => dispatch({type: SET_SEARCH, payload: e.target.value})}
           placeholder="Search todos"
         />
         <Suspense fallback={<div>Loading...</div>}>
-          <MemoizedTodoList />
+          <MemoizedTodoList todos={filteredTodos} />
         </Suspense>
       </div>
     </>

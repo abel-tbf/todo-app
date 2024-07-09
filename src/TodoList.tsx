@@ -1,6 +1,7 @@
-import { useState, useContext } from 'react';
-import { TodoContext } from "./TodoContext";
+import { useState } from 'react';
+import { useDispatch } from "react-redux";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { DELETE_TODO, UPDATE_TODO, TOGGLE_COMPLETE } from "./store";
 
 export interface ITodo {
   id: number;
@@ -8,8 +9,8 @@ export interface ITodo {
   completed: boolean;
 }
 
-function TodoList() {
-  const { filteredTodos, deleteTodo, toggleComplete, updateTodo } = useContext(TodoContext);
+function TodoList({todos}: {todos: ITodo[]}) {
+  const dispatch = useDispatch();
   const [editingId, setEditingId] = useState<number|null>(null);
   const [editingText, setEditingText] = useState("");
 
@@ -19,7 +20,7 @@ function TodoList() {
   };
   
   const saveEdit = (id: number) => {
-    updateTodo(id, editingText);
+    dispatch({type: UPDATE_TODO, payload: {id, text: editingText} });
     setEditingId(null);
     setEditingText("");
   };
@@ -27,11 +28,11 @@ function TodoList() {
   return (
     <div>
       <h2>My Todos</h2>
-      {filteredTodos.length === 0 ? (
+      {todos.length === 0 ? (
         <p>No todos left. Add some tasks!</p>
       ) : (
         <TransitionGroup component="ul">
-          {filteredTodos.map((todo: ITodo) => (
+          {todos.map((todo: ITodo) => (
             <CSSTransition key={todo.id} timeout={500} classNames="fade">
             <li key={todo.id} className={todo.completed ? "completed" : ""} >
             {editingId === todo.id ? (
@@ -48,10 +49,10 @@ function TodoList() {
             ) : (
               <>
                 {todo.text}
-                <button onClick={() => deleteTodo(todo.id)}>Delete</button>
+                <button onClick={() => dispatch({type: DELETE_TODO, payload: todo.id})}>Delete</button>
                 <button
                   className="complete"
-                  onClick={() => toggleComplete(todo.id)}
+                  onClick={() => dispatch({type: TOGGLE_COMPLETE, payload: todo.id})}
                 >
                   {todo.completed ? "Undo" : "Complete"}
                 </button>
