@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { TodoContext } from "./TodoContext";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 export interface ITodo {
@@ -7,14 +8,8 @@ export interface ITodo {
   completed: boolean;
 }
 
-interface ITodoList {
-  todos: ITodo[];
-  onDelete: (id: number) => void;
-  onToggleComplete: (id: number) => void;
-  onUpdate: (id: number, text: string) => void;
-}
-
-function TodoList({todos, onDelete, onToggleComplete, onUpdate}: ITodoList) {
+function TodoList() {
+  const { filteredTodos, deleteTodo, toggleComplete, updateTodo } = useContext(TodoContext);
   const [editingId, setEditingId] = useState<number|null>(null);
   const [editingText, setEditingText] = useState("");
 
@@ -24,7 +19,7 @@ function TodoList({todos, onDelete, onToggleComplete, onUpdate}: ITodoList) {
   };
   
   const saveEdit = (id: number) => {
-    onUpdate(id, editingText);
+    updateTodo(id, editingText);
     setEditingId(null);
     setEditingText("");
   };
@@ -32,11 +27,11 @@ function TodoList({todos, onDelete, onToggleComplete, onUpdate}: ITodoList) {
   return (
     <div>
       <h2>My Todos</h2>
-      {todos.length === 0 ? (
+      {filteredTodos.length === 0 ? (
         <p>No todos left. Add some tasks!</p>
       ) : (
         <TransitionGroup component="ul">
-          {todos.map((todo: ITodo) => (
+          {filteredTodos.map((todo: ITodo) => (
             <CSSTransition key={todo.id} timeout={500} classNames="fade">
             <li key={todo.id} className={todo.completed ? "completed" : ""} >
             {editingId === todo.id ? (
@@ -53,10 +48,10 @@ function TodoList({todos, onDelete, onToggleComplete, onUpdate}: ITodoList) {
             ) : (
               <>
                 {todo.text}
-                <button onClick={() => onDelete(todo.id)}>Delete</button>
+                <button onClick={() => deleteTodo(todo.id)}>Delete</button>
                 <button
                   className="complete"
-                  onClick={() => onToggleComplete(todo.id)}
+                  onClick={() => toggleComplete(todo.id)}
                 >
                   {todo.completed ? "Undo" : "Complete"}
                 </button>
