@@ -59,7 +59,7 @@ li button {
 }
 
 li button:hover {
-  background-color #dc3545;
+  background-color: #dc3545;
   color: white;
 }
 
@@ -71,17 +71,14 @@ li button.complete:hover {
 .fade-enter {
   opacity: 0;
 }
-
 .fade-enter-active {
   opacity: 1;
   transition: opacity 1s;
 }
-
 .fade-exit {
-  opacity: 0;
-}
-
-.fade-exit-active {
   opacity: 1;
+}
+.fade-exit-active {
+  opacity: 0;
   transition: opacity 1s;
 }
