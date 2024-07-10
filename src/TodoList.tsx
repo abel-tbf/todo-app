@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useDispatch } from "react-redux";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
-import { DELETE_TODO, UPDATE_TODO, TOGGLE_COMPLETE } from "./store";
+import { deleteTodo, updateTodo, toggleComplete } from "./store";
 
 export interface ITodo {
   id: number;
-  text: string;
+  title: string;
   completed: boolean;
 }
 
@@ -14,13 +14,13 @@ function TodoList({todos}: {todos: ITodo[]}) {
   const [editingId, setEditingId] = useState<number|null>(null);
   const [editingText, setEditingText] = useState("");
 
-  const startEditing = (id: number, text: string) => {
+  const startEditing = (id: number, title: string) => {
     setEditingId(id);
-    setEditingText(text);
+    setEditingText(title);
   };
   
   const saveEdit = (id: number) => {
-    dispatch({type: UPDATE_TODO, payload: {id, text: editingText} });
+    dispatch(updateTodo({id, title: editingText} ));
     setEditingId(null);
     setEditingText("");
   };
@@ -48,15 +48,15 @@ function TodoList({todos}: {todos: ITodo[]}) {
               </>
             ) : (
               <>
-                {todo.text}
-                <button onClick={() => dispatch({type: DELETE_TODO, payload: todo.id})}>Delete</button>
+                {todo.title}
+                <button onClick={() => dispatch(deleteTodo(todo.id))}>Delete</button>
                 <button
                   className="complete"
-                  onClick={() => dispatch({type: TOGGLE_COMPLETE, payload: todo.id})}
+                  onClick={() => dispatch(toggleComplete(todo.id))}
                 >
                   {todo.completed ? "Undo" : "Complete"}
                 </button>
-                <button onClick={() => startEditing(todo.id, todo.text)}>
+                <button onClick={() => startEditing(todo.id, todo.title)}>
                   Edit
                 </button>
               </>

@@ -1,7 +1,10 @@
-import { memo, useState, useRef, KeyboardEvent, lazy, Suspense } from 'react';
+import { memo, useState, useRef, KeyboardEvent, lazy, Suspense, useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import { ADD_TODO, SET_FILTER, SET_SEARCH, ITodoState } from "./store";
+import { addTodo, setFilter, setSearch, ITodoState } from "./store";
 import './App.css'
+import { fetchTodos } from "./actions";
+import { PayloadAction } from "@reduxjs/toolkit";
+import { ITodo } from "./TodoList";
 
 const TodoList = lazy(() => import("./TodoList"));
 
@@ -15,9 +18,13 @@ function TodoApp() {
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    dispatch(fetchTodos() as unknown as PayloadAction<ITodo[]>);
+  }, [dispatch]);
+
   const handleAddTodo = () => {
     if (newTodo.trim()) {
-      dispatch({type: ADD_TODO, payload: newTodo});
+      dispatch(addTodo(newTodo));
       setNewTodo("");
       inputRef.current?.focus();
     }
@@ -38,7 +45,7 @@ function TodoApp() {
       return true;
     }
   }).filter(todo => {
-    return todo.text.toLowerCase().includes(search.toLowerCase());
+    return todo.title.toLowerCase().includes(search.toLowerCase());
   });
 
   return (
@@ -55,14 +62,14 @@ function TodoApp() {
         />
         <button onClick={handleAddTodo}>Add</button>
         <div>
-          <button onClick={() => dispatch({type: SET_FILTER, payload: "all"})}>All</button>
-          <button onClick={() => dispatch({type: SET_FILTER, payload: "active"})}>Active</button>
-          <button onClick={() => dispatch({type: SET_FILTER, payload: "completed"})}>Completed</button>
+          <button onClick={() => dispatch(setFilter("all"))}>All</button>
+          <button onClick={() => dispatch(setFilter("active"))}>Active</button>
+          <button onClick={() => dispatch(setFilter("completed"))}>Completed</button>
         </div>
         <input
           type="text"
           value={search}
-          onChange={(e) => dispatch({type: SET_SEARCH, payload: e.target.value})}
+          onChange={(e) => dispatch(setSearch(e.target.value))}
           placeholder="Search todos"
         />
         <Suspense fallback={<div>Loading...</div>}>

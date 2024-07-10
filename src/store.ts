@@ -1,5 +1,6 @@
 import { ITodo } from "./TodoList";
-import { createStore } from "redux";
+import { configureStore, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {thunk} from "redux-thunk"
 
 export interface ITodoState {
   todos: ITodo[];
@@ -7,98 +8,63 @@ export interface ITodoState {
   search: string;
 }
 
-const initialState = {
+const initialState: ITodoState = {
   todos: [],
   filter: "all",
   search: ""
 };
 
-export const ADD_TODO = "ADD_TODO";
-export const DELETE_TODO = "DELETE_TODO";
-export const TOGGLE_COMPLETE = "TOGGLE_COMPLETE";
-export const UPDATE_TODO = "UPDATE_TODO";
-export const SET_FILTER = "SET_FILTER";
-export const SET_SEARCH = "SET_SEARCH";
-
-export type ADD_TODO = typeof ADD_TODO;
-export type DELETE_TODO = typeof DELETE_TODO;
-export type TOGGLE_COMPLETE = typeof TOGGLE_COMPLETE;
-export type UPDATE_TODO = typeof UPDATE_TODO;
-export type SET_FILTER = typeof SET_FILTER;
-export type SET_SEARCH = typeof SET_SEARCH;
-
-export interface AddTodoAction {
-  type: ADD_TODO;
-  payload: string;
-}
-
-export interface DeleteTodoAction {
-  type: DELETE_TODO;
-  payload: number;
-}
-
-export interface ToggleCompleteAction {
-  type: TOGGLE_COMPLETE;
-  payload: number;
-}
-
-export interface UpdateTodoAction {
-  type: UPDATE_TODO;
-  payload: {
-    id: number;
-    text: string;
-  };
-}
-
-export interface SetFilterAction {
-  type: SET_FILTER;
-  payload: string;
-}
-
-export interface SetSearchAction {
-  type:SET_SEARCH;
-  payload: string;
-}
-
-export type TodoAction = AddTodoAction | DeleteTodoAction | ToggleCompleteAction | UpdateTodoAction | SetFilterAction | SetSearchAction;
-
-const reducer = (state: ITodoState = initialState, action: TodoAction) => {
-  switch (action.type) {
-    case ADD_TODO:
-      return {
-        ...state,
-        todos: [...state.todos, {id: Date.now(), text: action.payload, completed: false}]
+const todosSlice = createSlice({
+  name: "todos",
+  initialState,
+  reducers: {
+    addTodo: (state: ITodoState, action: PayloadAction<string>) => {
+      state.todos.push({
+        id: Date.now(),
+        title: action.payload,
+        completed: false
+      });
+    },
+    deleteTodo: (state: ITodoState, action: PayloadAction<number>) => {
+      state.todos = state.todos.filter((todo) => todo.id !== action.payload);
+    },
+    toggleComplete: (state: ITodoState, action: PayloadAction<number>) => {
+      const todo = state.todos.find((todo) => todo.id === action.payload);
+      if (todo) {
+        todo.completed = !todo.completed;
       }
-    case DELETE_TODO:
-      return {
-        ...state,
-        todos: state.todos.filter(todo => todo.id !== action.payload)
+    },
+    updateTodo: (state: ITodoState, action: PayloadAction<{id: number, title: string}>) => {
+      const todo = state.todos.find((todo) => todo.id === action.payload.id);
+      if (todo) {
+        todo.title = action.payload.title;
       }
-    case TOGGLE_COMPLETE:
-      return {
-        ...state,
-        todos: state.todos.map((todo: ITodo) => todo.id === action.payload ? {...todo, completed: !todo.completed} : todo)
-      }
-    case UPDATE_TODO:
-      return {
-        ...state,
-        todos: state.todos.map((todo: ITodo) => todo.id === action.payload.id ? {...todo, text: action.payload.text} : todo)
-      }
-    case SET_FILTER:
-      return {
-        ...state,
-        filter: action.payload
-      }
-    case SET_SEARCH:
-      return {
-        ...state,
-        search: action.payload
-      }
-    default:
-      return state;
+    },
+    setFilter: (state: ITodoState, action: PayloadAction<string>) => {
+      state.filter = action.payload;
+    },
+    setSearch: (state: ITodoState, action: PayloadAction<string>) => {
+      state.search = action.payload;
+    },
+    fetchTodosSuccess: (state: ITodoState, action: PayloadAction<ITodo[]>) => {
+      state.todos = action.payload;
+    },
   }
-};
+});
 
-const store = createStore(reducer);
+export const {
+  addTodo,
+  deleteTodo,
+  toggleComplete,
+  updateTodo,
+  setFilter,
+  setSearch,
+  fetchTodosSuccess,
+} = todosSlice.actions;
+
+const store = configureStore({
+  reducer: todosSlice.reducer,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
+});
 
 export default store;
