@@ -15,7 +15,7 @@ interface IContext {
   filteredTodos: ITodo[];
   deleteTodo: (id: number) => void;
   toggleComplete: (id: number) => void;
-  updateTodo: (id: number, text: string) => void;
+  updateTodo: (id: number, title: string) => void;
 }
 
 const TodoContext = createContext({} as IContext);
@@ -33,7 +33,7 @@ const TodoProvider: React.FC<IProps>  = ({children}) => {
   }, [todos]);
 
   const addTodo = (newTodo: string) => {
-    setTodos([...todos, { id: Date.now(), text: newTodo, completed: false }]);
+    setTodos([...todos, { id: Date.now(), title: newTodo, completed: false }]);
   };
 
   const deleteTodo = (id: number) => {
@@ -46,7 +46,7 @@ const TodoProvider: React.FC<IProps>  = ({children}) => {
 
   const updateTodo = (id: number, newText: string) => {
     setTodos(
-      todos.map((todo) => (todo.id === id )? {...todo, text: newText} : todo));
+      todos.map((todo) => (todo.id === id )? {...todo, title: newText} : todo));
   };
 
   const filteredTodos = todos.filter((todo) => {
@@ -58,7 +58,7 @@ const TodoProvider: React.FC<IProps>  = ({children}) => {
       return true;
     }
   }).filter(todo => {
-    return todo.text.toLowerCase().includes(search.toLowerCase());
+    return todo.title.toLowerCase().includes(search.toLowerCase());
   });
 
   return (
